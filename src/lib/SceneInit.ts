@@ -11,6 +11,9 @@ export default class SceneInit {
   directionalLight: THREE.DirectionalLight | undefined;
   stats: Stats | undefined;
   controls: OrbitControls | undefined;
+  boxGeometry: THREE.BoxGeometry | undefined;
+  boxMaterial: THREE.MeshPhongMaterial | undefined;
+  boxMesh: THREE.Mesh | undefined;
   uniforms: any;
   fov: number;
   nearPlane: number;
@@ -37,6 +40,11 @@ export default class SceneInit {
     // NOTE: Lighting is basically required.
     this.ambientLight = undefined;
     this.directionalLight = undefined;
+
+    // NOTE: basic cube
+    this.boxGeometry = undefined;
+    this.boxMaterial = undefined;
+    this.boxMesh = undefined;
   }
 
   initialize() {
@@ -76,6 +84,12 @@ export default class SceneInit {
     this.directionalLight.position.set(0, 32, 64);
     this.scene.add(this.directionalLight);
 
+    // basic cube
+    this.boxGeometry = new THREE.BoxGeometry(16, 16, 16);
+    this.boxMaterial = new THREE.MeshPhongMaterial({ color: 0x39ff14 });
+    this.boxMesh = new THREE.Mesh(this.boxGeometry, this.boxMaterial);
+    this.scene.add(this.boxMesh);
+
     // if window resizes
     window.addEventListener("resize", () => this.onWindowResize(), false);
 
@@ -99,6 +113,10 @@ export default class SceneInit {
     if (this.stats && this.controls) {
       this.stats.update();
       this.controls.update();
+    }
+    if (this.boxMesh) {
+      this.boxMesh.rotation.x += 0.01;
+      this.boxMesh.rotation.y += 0.01;
     }
   }
 
