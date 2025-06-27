@@ -1,5 +1,4 @@
 import * as THREE from "three";
-import { OrbitControls } from "three/examples/jsm/Addons.js";
 import Stats from "three/examples/jsm/libs/stats.module.js";
 
 export default class SceneInit {
@@ -9,11 +8,10 @@ export default class SceneInit {
   clock: THREE.Clock | undefined;
   ambientLight: THREE.AmbientLight | undefined;
   directionalLight: THREE.DirectionalLight | undefined;
-  stats: Stats | undefined;
-  controls: OrbitControls | undefined;
   boxGeometry: THREE.BoxGeometry | undefined;
   boxMaterial: THREE.MeshPhongMaterial | undefined;
   boxMesh: THREE.Mesh | undefined;
+  stats: Stats | undefined;
   uniforms: any;
   fov: number;
   nearPlane: number;
@@ -35,7 +33,6 @@ export default class SceneInit {
     // NOTE: Additional components.
     this.clock = undefined;
     this.stats = undefined;
-    this.controls = undefined;
 
     // NOTE: Lighting is basically required.
     this.ambientLight = undefined;
@@ -53,7 +50,7 @@ export default class SceneInit {
       this.fov,
       window.innerWidth / window.innerHeight,
       1,
-      1000,
+      1000
     );
     this.camera.position.z = 48;
 
@@ -69,7 +66,6 @@ export default class SceneInit {
     document.body.appendChild(this.renderer.domElement);
 
     this.clock = new THREE.Clock();
-    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.stats = new Stats();
     document.body.appendChild(this.stats.dom);
 
@@ -110,9 +106,8 @@ export default class SceneInit {
     // requestAnimationFrame(this.animate.bind(this));
     window.requestAnimationFrame(this.animate.bind(this));
     this.render();
-    if (this.stats && this.controls) {
+    if (this.stats) {
       this.stats.update();
-      this.controls.update();
     }
     if (this.boxMesh) {
       this.boxMesh.rotation.x += 0.01;
