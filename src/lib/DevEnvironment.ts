@@ -8,6 +8,8 @@ export default class DevEnvironment {
   groundGeometry: THREE.PlaneGeometry | undefined;
   groundMaterial: THREE.MeshPhongMaterial | undefined;
   ground: THREE.Mesh | undefined;
+  mapLoader: THREE.TextureLoader | undefined;
+  checkerboard: THREE.Texture | undefined;
   sceneInit: SceneInit;
 
   constructor(sceneInit: SceneInit) {
@@ -23,6 +25,10 @@ export default class DevEnvironment {
     this.groundGeometry = undefined;
     this.groundMaterial = undefined;
     this.ground = undefined;
+
+    // NOTE: checkerboard params
+    this.mapLoader = undefined;
+    this.checkerboard = undefined;
   }
 
   initialize() {
@@ -39,6 +45,16 @@ export default class DevEnvironment {
     this.ground.castShadow = false;
     this.ground.receiveShadow = true;
     this.ground.rotation.x = -Math.PI / 2;
+
+    this.mapLoader = new THREE.TextureLoader();
+    const maxAnisotropy =
+      this.sceneInit.renderer?.capabilities.getMaxAnisotropy;
+    this.checkerboard = this.mapLoader.load("/checkerboard.png");
+    this.checkerboard.anisotropy = maxAnisotropy;
+    this.checkerboard.wrapS = THREE.RepeatWrapping;
+    this.checkerboard.wrapT = THREE.RepeatWrapping;
+    this.checkerboard.repeat.set(32, 32);
+    this.checkerboard.colorSpace = THREE.SRGBColorSpace;
 
     if (this.sceneInit.scene) {
       this.sceneInit.scene.background = new THREE.CubeTextureLoader()
