@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import Stats from "three/examples/jsm/libs/stats.module.js";
+import { OrbitControls } from "three/examples/jsm/Addons.js";
 
 export default class SceneInit {
   scene: THREE.Scene | undefined;
@@ -8,10 +9,8 @@ export default class SceneInit {
   clock: THREE.Clock | undefined;
   ambientLight: THREE.AmbientLight | undefined;
   directionalLight: THREE.DirectionalLight | undefined;
-  boxGeometry: THREE.BoxGeometry | undefined;
-  boxMaterial: THREE.MeshPhongMaterial | undefined;
-  boxMesh: THREE.Mesh | undefined;
   stats: Stats | undefined;
+  controls: OrbitControls | undefined;
   uniforms: any;
   fov: number;
   nearPlane: number;
@@ -33,26 +32,23 @@ export default class SceneInit {
     // NOTE: Additional components.
     this.clock = undefined;
     this.stats = undefined;
+    this.controls = undefined;
 
     // NOTE: Lighting is basically required.
     this.ambientLight = undefined;
     this.directionalLight = undefined;
-
-    // NOTE: basic cube
-    this.boxGeometry = undefined;
-    this.boxMaterial = undefined;
-    this.boxMesh = undefined;
   }
 
   initialize() {
     this.scene = new THREE.Scene();
+    this.scene.fog = new THREE.FogExp2(0xefd1b5, 0.0025);
     this.camera = new THREE.PerspectiveCamera(
       this.fov,
       window.innerWidth / window.innerHeight,
       1,
       1000
     );
-    this.camera.position.z = 48;
+    this.camera.position.set(75, 20, 0);
 
     // NOTE: Specify a canvas which is already created in the HTML.
     // const canvas = document.getElementById(this.canvasId);
@@ -67,6 +63,8 @@ export default class SceneInit {
 
     this.clock = new THREE.Clock();
     this.stats = new Stats();
+    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    this.controls.target.set(0, 20, 0);
     document.body.appendChild(this.stats.dom);
 
     // ambient light which is for the whole scene
@@ -79,12 +77,6 @@ export default class SceneInit {
     // this.directionalLight.castShadow = true;
     this.directionalLight.position.set(0, 32, 64);
     this.scene.add(this.directionalLight);
-
-    // basic cube
-    this.boxGeometry = new THREE.BoxGeometry(16, 16, 16);
-    this.boxMaterial = new THREE.MeshPhongMaterial({ color: 0x39ff14 });
-    this.boxMesh = new THREE.Mesh(this.boxGeometry, this.boxMaterial);
-    this.scene.add(this.boxMesh);
 
     // if window resizes
     window.addEventListener("resize", () => this.onWindowResize(), false);
@@ -106,12 +98,9 @@ export default class SceneInit {
     // requestAnimationFrame(this.animate.bind(this));
     window.requestAnimationFrame(this.animate.bind(this));
     this.render();
-    if (this.stats) {
+    if (this.stats && this.controls) {
       this.stats.update();
-    }
-    if (this.boxMesh) {
-      this.boxMesh.rotation.x += 0.01;
-      this.boxMesh.rotation.y += 0.01;
+      this.controls.update();
     }
   }
 
