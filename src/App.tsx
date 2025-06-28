@@ -80,22 +80,6 @@ function App() {
       objects_.push(b);
     }
 
-    // crosshair
-    const crosshair = mapLoader.load("/crosshair.png");
-    crosshair.anisotropy = maxAnisotropy;
-
-    const sprite_ = new THREE.Sprite(
-      new THREE.SpriteMaterial({
-        map: crosshair,
-        color: 0xffffff,
-        fog: false,
-        depthTest: false,
-        depthWrite: false,
-      })
-    );
-    sprite_.scale.set(0.15, 0.15 * test.camera.aspect, 1);
-    sprite_.position.set(0, 0, -10);
-
     if (test.scene) {
       test.scene.background = new THREE.CubeTextureLoader()
         .setPath("/skybox/")

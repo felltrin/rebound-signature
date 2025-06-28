@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import Stats from "three/examples/jsm/libs/stats.module.js";
-import { OrbitControls } from "three/examples/jsm/Addons.js";
+import { FirstPersonControls } from "three/examples/jsm/Addons.js";
 
 export default class SceneInit {
   scene: THREE.Scene | undefined;
@@ -10,7 +10,7 @@ export default class SceneInit {
   ambientLight: THREE.AmbientLight | undefined;
   directionalLight: THREE.DirectionalLight | undefined;
   stats: Stats | undefined;
-  controls: OrbitControls | undefined;
+  controls: FirstPersonControls | undefined;
   uniforms: any;
   fov: number;
   nearPlane: number;
@@ -24,7 +24,7 @@ export default class SceneInit {
     this.renderer = undefined;
 
     // NOTE: Camera params;
-    this.fov = 45;
+    this.fov = 60;
     this.nearPlane = 1;
     this.farPlane = 1000;
     this.canvasId = canvasId;
@@ -48,23 +48,30 @@ export default class SceneInit {
       1,
       1000
     );
-    this.camera.position.set(75, 20, 0);
+    this.camera.position.set(0, 2, 0);
 
     // NOTE: Specify a canvas which is already created in the HTML.
     // const canvas = document.getElementById(this.canvasId);
     this.renderer = new THREE.WebGLRenderer({
       canvas: document.getElementById(this.canvasId) as HTMLCanvasElement,
       // NOTE: Anti-aliasing smooths out the edges.
-      antialias: true,
+      antialias: false,
     });
     this.renderer.setSize(window.innerWidth, window.innerHeight);
+    this.renderer.shadowMap.enabled = true;
+    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     // this.renderer.shadowMap.enabled = true;
     document.body.appendChild(this.renderer.domElement);
 
     this.clock = new THREE.Clock();
     this.stats = new Stats();
-    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-    this.controls.target.set(0, 20, 0);
+    this.controls = new FirstPersonControls(
+      this.camera,
+      this.renderer.domElement
+    );
+    this.controls.lookSpeed = 0.8;
+    this.controls.movementSpeed = 5;
     document.body.appendChild(this.stats.dom);
 
     // ambient light which is for the whole scene
@@ -98,9 +105,9 @@ export default class SceneInit {
     // requestAnimationFrame(this.animate.bind(this));
     window.requestAnimationFrame(this.animate.bind(this));
     this.render();
-    if (this.stats && this.controls) {
+    if (this.stats && this.controls && this.clock) {
       this.stats.update();
-      this.controls.update();
+      this.controls.update(this.clock.getDelta());
     }
   }
 
