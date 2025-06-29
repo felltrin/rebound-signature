@@ -1,6 +1,13 @@
 import * as THREE from "three";
 import Stats from "three/examples/jsm/libs/stats.module.js";
 
+const KEYS = {
+  a: 65,
+  s: 83,
+  w: 87,
+  d: 68,
+};
+
 function clamp(x, a, b) {
   return Math.min(Math.max(x, a), b);
 }
@@ -8,23 +15,23 @@ function clamp(x, a, b) {
 class PlayerInput {
   current:
     | {
-      leftButton: boolean;
-      rightButton: boolean;
-      mouseX: number;
-      mouseY: number;
-      mouseXDelta: number;
-      mouseYDelta: number;
-    }
+        leftButton: boolean;
+        rightButton: boolean;
+        mouseX: number;
+        mouseY: number;
+        mouseXDelta: number;
+        mouseYDelta: number;
+      }
     | undefined;
   previous:
     | {
-      leftButton: boolean;
-      rightButton: boolean;
-      mouseX: number;
-      mouseY: number;
-      mouseXDelta: number;
-      mouseYDelta: number;
-    }
+        leftButton: boolean;
+        rightButton: boolean;
+        mouseX: number;
+        mouseY: number;
+        mouseXDelta: number;
+        mouseYDelta: number;
+      }
     | undefined;
   keys: object | undefined;
   previousKeys: object | undefined;
@@ -101,8 +108,17 @@ class PlayerInput {
     this.keys[e.keyCode] = false;
   }
 
-  update() {
-    this.previous = { ...this.current };
+  key(keyCode) {
+    return !!this.keys[keyCode];
+  }
+
+  update(_) {
+    if (this.previous !== undefined) {
+      this.current.mouseXDelta = this.current.mouseX - this.previous.mouseX;
+      this.current.mouseYDelta = this.current.mouseY - this.previous.mouseY;
+
+      this.previous = { ...this.current };
+    }
   }
 }
 
@@ -113,12 +129,17 @@ class FirstPersonCamera {
   input: PlayerInput | undefined;
   phi: number;
   theta: number;
+  // headBobActive: boolean;
 
   constructor(camera: THREE.PerspectiveCamera) {
     this.camera = camera;
     this.input = undefined;
     this.rotation = new THREE.Quaternion();
-    this.translation = undefined;
+    // this.translation = undefined;
+    this.translation = new THREE.Vector3();
+
+    // NOTE: extra things for translation
+    // this.headBobActive = false;
     this.phi = 0;
     this.theta = 0;
   }
@@ -131,10 +152,42 @@ class FirstPersonCamera {
   update(timeElapsed) {
     this.updateRotation(timeElapsed);
     this.updateCamera(timeElapsed);
+    this.updateTranslation(timeElapsed);
+    if (this.input) {
+      this.input.update(timeElapsed);
+    }
   }
 
   updateCamera(_) {
     this.camera.quaternion.copy(this.rotation);
+    this.camera.position.copy(this.translation);
+  }
+
+  updateTranslation(timeElapsed) {
+    const forwardVelocity =
+      (this.input?.key(KEYS.w) ? 1 : 0) + (this.input?.key(KEYS.s) ? -1 : 0);
+    const strafeVelocity =
+      (this.input?.key(KEYS.a) ? 1 : 0) + (this.input?.key(KEYS.d) ? -1 : 0);
+
+    const qx = new THREE.Quaternion();
+    qx.setFromAxisAngle(new THREE.Vector3(0, 1, 0), this.phi);
+
+    const forward = new THREE.Vector3(0, 0, -1);
+    forward.applyQuaternion(qx);
+    // forward.multiplyScalar(forwardVelocity * timeElapsed * 10);
+    forward.multiplyScalar(forwardVelocity * 10);
+
+    const left = new THREE.Vector3(-1, 0, 0);
+    left.applyQuaternion(qx);
+    // left.multiplyScalar(strafeVelocity * timeElapsed * 10);
+    left.multiplyScalar(strafeVelocity * 10);
+
+    this.translation?.add(forward);
+    this.translation?.add(left);
+
+    // if (forwardVelocity != 0 || strafeVelocity != 0) {
+    //   this.headBobActive = true;
+    // }
   }
 
   updateRotation(timeElapsed) {
@@ -201,7 +254,7 @@ export default class SceneInit {
       this.fov,
       window.innerWidth / window.innerHeight,
       1,
-      1000,
+      1000
     );
     this.camera.position.set(0, 2, 0);
     this.fpsCamera = new FirstPersonCamera(this.camera);
