@@ -8,23 +8,23 @@ function clamp(x, a, b) {
 class PlayerInput {
   current:
     | {
-        leftButton: boolean;
-        rightButton: boolean;
-        mouseX: number;
-        mouseY: number;
-        mouseXDelta: number;
-        mouseYDelta: number;
-      }
+      leftButton: boolean;
+      rightButton: boolean;
+      mouseX: number;
+      mouseY: number;
+      mouseXDelta: number;
+      mouseYDelta: number;
+    }
     | undefined;
   previous:
     | {
-        leftButton: boolean;
-        rightButton: boolean;
-        mouseX: number;
-        mouseY: number;
-        mouseXDelta: number;
-        mouseYDelta: number;
-      }
+      leftButton: boolean;
+      rightButton: boolean;
+      mouseX: number;
+      mouseY: number;
+      mouseXDelta: number;
+      mouseYDelta: number;
+    }
     | undefined;
   keys: object | undefined;
   previousKeys: object | undefined;
@@ -201,7 +201,7 @@ export default class SceneInit {
       this.fov,
       window.innerWidth / window.innerHeight,
       1,
-      1000
+      1000,
     );
     this.camera.position.set(0, 2, 0);
     this.fpsCamera = new FirstPersonCamera(this.camera);
