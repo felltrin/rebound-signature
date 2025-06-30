@@ -21,7 +21,7 @@ function App() {
 
     const plane = new THREE.Mesh(
       new THREE.PlaneGeometry(100, 100, 10, 10),
-      new THREE.MeshStandardMaterial({ map: checkerboard })
+      new THREE.MeshStandardMaterial({ map: checkerboard }),
     );
     plane.castShadow = false;
     plane.receiveShadow = true;
@@ -31,7 +31,7 @@ function App() {
     const boxGeometry = new THREE.BoxGeometry(4, 4, 4);
     const box = new THREE.Mesh(
       boxGeometry,
-      loadMaterial_("vintage-tile1_", 0.2)
+      loadMaterial_("vintage-tile1_", 0.2),
     );
     box.position.set(10, 0, 0);
     box.castShadow = true;
@@ -41,7 +41,7 @@ function App() {
 
     const wall1 = new THREE.Mesh(
       new THREE.BoxGeometry(100, 50, 4),
-      concreteMaterial
+      concreteMaterial,
     );
     wall1.position.set(0, -10, -50);
     wall1.castShadow = true;
@@ -49,7 +49,7 @@ function App() {
 
     const wall2 = new THREE.Mesh(
       new THREE.BoxGeometry(100, 50, 4),
-      concreteMaterial
+      concreteMaterial,
     );
     wall2.position.set(0, -10, 50);
     wall2.castShadow = true;
@@ -57,7 +57,7 @@ function App() {
 
     const wall3 = new THREE.Mesh(
       new THREE.BoxGeometry(4, 50, 100),
-      concreteMaterial
+      concreteMaterial,
     );
     wall3.position.set(50, -10, 0);
     wall3.castShadow = true;
@@ -65,7 +65,7 @@ function App() {
 
     const wall4 = new THREE.Mesh(
       new THREE.BoxGeometry(4, 50, 100),
-      concreteMaterial
+      concreteMaterial,
     );
     wall4.position.set(-50, -10, 0);
     wall4.castShadow = true;

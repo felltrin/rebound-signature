@@ -15,23 +15,23 @@ function clamp(x, a, b) {
 class PlayerInput {
   current:
     | {
-        leftButton: boolean;
-        rightButton: boolean;
-        mouseX: number;
-        mouseY: number;
-        mouseXDelta: number;
-        mouseYDelta: number;
-      }
+      leftButton: boolean;
+      rightButton: boolean;
+      mouseX: number;
+      mouseY: number;
+      mouseXDelta: number;
+      mouseYDelta: number;
+    }
     | undefined;
   previous:
     | {
-        leftButton: boolean;
-        rightButton: boolean;
-        mouseX: number;
-        mouseY: number;
-        mouseXDelta: number;
-        mouseYDelta: number;
-      }
+      leftButton: boolean;
+      rightButton: boolean;
+      mouseX: number;
+      mouseY: number;
+      mouseXDelta: number;
+      mouseYDelta: number;
+    }
     | undefined;
   keys: object | undefined;
   previousKeys: object | undefined;
@@ -169,12 +169,12 @@ class FirstPersonCamera {
   updateHeadBob(timeElapsed) {
     if (this.headBobActive) {
       const waveLength = Math.PI;
-      const nextStep =
-        1 + Math.floor(((this.headBobTimer + 0.000001) * 10) / waveLength);
+      const nextStep = 1 +
+        Math.floor(((this.headBobTimer + 0.000001) * 10) / waveLength);
       const nextStepTime = (nextStep * waveLength) / 10;
       this.headBobTimer = Math.min(
         this.headBobTimer + timeElapsed,
-        nextStepTime
+        nextStepTime,
       );
 
       if (this.headBobTimer == nextStepTime) {
@@ -215,10 +215,10 @@ class FirstPersonCamera {
   }
 
   updateTranslation(timeElapsed) {
-    const forwardVelocity =
-      (this.input?.key(KEYS.w) ? 1 : 0) + (this.input?.key(KEYS.s) ? -1 : 0);
-    const strafeVelocity =
-      (this.input?.key(KEYS.a) ? 1 : 0) + (this.input?.key(KEYS.d) ? -1 : 0);
+    const forwardVelocity = (this.input?.key(KEYS.w) ? 1 : 0) +
+      (this.input?.key(KEYS.s) ? -1 : 0);
+    const strafeVelocity = (this.input?.key(KEYS.a) ? 1 : 0) +
+      (this.input?.key(KEYS.d) ? -1 : 0);
 
     const qx = new THREE.Quaternion();
     qx.setFromAxisAngle(new THREE.Vector3(0, 1, 0), this.phi);
@@ -247,7 +247,7 @@ class FirstPersonCamera {
     this.theta = clamp(
       this.theta + -yh * this.thetaSpeed,
       -Math.PI / 3,
-      Math.PI / 3
+      Math.PI / 3,
     );
 
     const qx = new THREE.Quaternion();
@@ -307,7 +307,7 @@ export default class SceneInit {
       this.fov,
       window.innerWidth / window.innerHeight,
       1,
-      1000
+      1000,
     );
     this.camera.position.set(0, 2, 0);
     this.fpsCamera = new FirstPersonCamera(this.camera);
