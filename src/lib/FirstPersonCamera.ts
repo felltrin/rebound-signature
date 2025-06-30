@@ -1,13 +1,13 @@
 import * as THREE from "three";
 
 const KEYS = {
-  a: 65,
-  s: 83,
-  w: 87,
-  d: 68,
+  a: "a",
+  s: "s",
+  w: "w",
+  d: "d",
 };
 
-function clamp(x, a, b) {
+function clamp(x: number, a: number, b: number) {
   return Math.min(Math.max(x, a), b);
 }
 
@@ -32,7 +32,7 @@ class PlayerInput {
         mouseYDelta: number;
       }
     | undefined;
-  keys: object | undefined;
+  keys: { [key: string]: boolean } | undefined;
   previousKeys: object | undefined;
 
   constructor() {
@@ -61,58 +61,64 @@ class PlayerInput {
     document.addEventListener("keyup", (e) => this.onKeyUp(e), false);
   }
 
-  onMouseDown(e) {
+  onMouseDown(e: MouseEvent) {
     switch (e.button) {
-      case "0": {
+      case 0: {
         if (this.current) this.current.leftButton = true;
         break;
       }
-      case "2": {
+      case 2: {
         if (this.current) this.current.rightButton = true;
         break;
       }
     }
   }
 
-  onMouseUp(e) {
+  onMouseUp(e: MouseEvent) {
     switch (e.button) {
-      case "0": {
+      case 0: {
         if (this.current) this.current.leftButton = false;
         break;
       }
-      case "2": {
+      case 2: {
         if (this.current) this.current.rightButton = false;
         break;
       }
     }
   }
 
-  onMouseMove(e) {
-    this.current.mouseX = e.pageX - window.innerWidth / 2;
-    this.current.mouseY = e.pageY - window.innerHeight / 2;
+  onMouseMove(e: MouseEvent) {
+    if (this.current) {
+      this.current.mouseX = e.pageX - window.innerWidth / 2;
+      this.current.mouseY = e.pageY - window.innerHeight / 2;
+    }
 
-    if (this.previous === undefined) {
+    if (this.previous === undefined && this.current) {
       this.previous = { ...this.current };
     }
 
-    this.current.mouseXDelta = this.current.mouseX - this.previous.mouseX;
-    this.current.mouseYDelta = this.current.mouseY - this.previous.mouseY;
+    if (this.current && this.previous) {
+      this.current.mouseXDelta = this.current.mouseX - this.previous.mouseX;
+      this.current.mouseYDelta = this.current.mouseY - this.previous.mouseY;
+    }
   }
 
-  onKeyDown(e) {
-    this.keys[e.keyCode] = true;
+  onKeyDown(e: KeyboardEvent) {
+    if (this.keys) this.keys[e.key] = true;
+    console.log(e.key);
   }
 
-  onKeyUp(e) {
-    this.keys[e.keyCode] = false;
+  onKeyUp(e: KeyboardEvent) {
+    if (this.keys) this.keys[e.key] = false;
+    console.log(e.key);
   }
 
-  key(keyCode) {
-    return !!this.keys[keyCode];
+  key(key: string) {
+    if (this.keys) return !!this.keys[key];
   }
 
-  update(_) {
-    if (this.previous !== undefined) {
+  update(_: number) {
+    if (this.previous && this.current) {
       this.current.mouseXDelta = this.current.mouseX - this.previous.mouseX;
       this.current.mouseYDelta = this.current.mouseY - this.previous.mouseY;
 
@@ -155,8 +161,8 @@ export default class FirstPersonCamera {
     this.input.initialize();
   }
 
-  update(timeElapsed) {
-    this.updateRotation(timeElapsed);
+  update(timeElapsed: number) {
+    this.updateRotation();
     this.updateCamera(timeElapsed);
     this.updateTranslation(timeElapsed);
     this.updateHeadBob(timeElapsed);
@@ -165,7 +171,7 @@ export default class FirstPersonCamera {
     }
   }
 
-  updateHeadBob(timeElapsed) {
+  updateHeadBob(timeElapsed: number) {
     if (this.headBobActive) {
       const waveLength = Math.PI;
       const nextStep =
@@ -182,9 +188,9 @@ export default class FirstPersonCamera {
     }
   }
 
-  updateCamera(_) {
+  updateCamera(_: number) {
     this.camera.quaternion.copy(this.rotation);
-    this.camera.position.copy(this.translation);
+    if (this.translation) this.camera.position.copy(this.translation);
     this.camera.position.y = Math.sin(this.headBobTimer * 10) * 0.5;
 
     const forward = new THREE.Vector3(0, 0, -1);
@@ -213,7 +219,7 @@ export default class FirstPersonCamera {
     this.camera.lookAt(closest);
   }
 
-  updateTranslation(timeElapsed) {
+  updateTranslation(timeElapsed: number) {
     const forwardVelocity =
       (this.input?.key(KEYS.w) ? 1 : 0) + (this.input?.key(KEYS.s) ? -1 : 0);
     const strafeVelocity =
@@ -238,16 +244,21 @@ export default class FirstPersonCamera {
     }
   }
 
-  updateRotation(timeElapsed) {
-    const xh = this.input.current.mouseXDelta / window.innerWidth;
-    const yh = this.input.current.mouseYDelta / window.innerHeight;
+  updateRotation() {
+    let xh, yh;
+    if (this.input && this.input.current) {
+      xh = this.input.current.mouseXDelta / window.innerWidth;
+      yh = this.input.current.mouseYDelta / window.innerHeight;
+    }
 
-    this.phi += -xh * this.phiSpeed;
-    this.theta = clamp(
-      this.theta + -yh * this.thetaSpeed,
-      -Math.PI / 3,
-      Math.PI / 3
-    );
+    if (xh && yh) {
+      this.phi += -xh * this.phiSpeed;
+      this.theta = clamp(
+        this.theta + -yh * this.thetaSpeed,
+        -Math.PI / 3,
+        Math.PI / 3
+      );
+    }
 
     const qx = new THREE.Quaternion();
     qx.setFromAxisAngle(new THREE.Vector3(0, 1, 0), this.phi);
