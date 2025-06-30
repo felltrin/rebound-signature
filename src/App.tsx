@@ -11,7 +11,7 @@ function App() {
     test.animate();
 
     const mapLoader = new THREE.TextureLoader();
-    const maxAnisotropy = test.renderer?.capabilities.getMaxAnisotropy;
+    const maxAnisotropy = test.renderer.capabilities.getMaxAnisotropy();
     const checkerboard = mapLoader.load("/checkerboard.png");
     checkerboard.anisotropy = maxAnisotropy;
     checkerboard.wrapS = THREE.RepeatWrapping;
@@ -21,19 +21,19 @@ function App() {
 
     const plane = new THREE.Mesh(
       new THREE.PlaneGeometry(100, 100, 10, 10),
-      new THREE.MeshStandardMaterial({ map: checkerboard })
+      new THREE.MeshStandardMaterial({ map: checkerboard }),
     );
     plane.castShadow = false;
     plane.receiveShadow = true;
     plane.rotation.x = -Math.PI / 2;
-    plane.position.set(0, -1, 0);
+    plane.position.set(0, -2, 0);
 
     const boxGeometry = new THREE.BoxGeometry(4, 4, 4);
     const box = new THREE.Mesh(
       boxGeometry,
-      loadMaterial_("vintage-tile1_", 0.2)
+      loadMaterial_("vintage-tile1_", 0.2),
     );
-    box.position.set(10, 2, 0);
+    box.position.set(10, 0, 0);
     box.castShadow = true;
     box.receiveShadow = true;
 
@@ -41,7 +41,7 @@ function App() {
 
     const wall1 = new THREE.Mesh(
       new THREE.BoxGeometry(100, 50, 4),
-      concreteMaterial
+      concreteMaterial,
     );
     wall1.position.set(0, -10, -50);
     wall1.castShadow = true;
@@ -49,7 +49,7 @@ function App() {
 
     const wall2 = new THREE.Mesh(
       new THREE.BoxGeometry(100, 50, 4),
-      concreteMaterial
+      concreteMaterial,
     );
     wall2.position.set(0, -10, 50);
     wall2.castShadow = true;
@@ -57,7 +57,7 @@ function App() {
 
     const wall3 = new THREE.Mesh(
       new THREE.BoxGeometry(4, 50, 100),
-      concreteMaterial
+      concreteMaterial,
     );
     wall3.position.set(50, -10, 0);
     wall3.castShadow = true;
@@ -65,20 +65,24 @@ function App() {
 
     const wall4 = new THREE.Mesh(
       new THREE.BoxGeometry(4, 50, 100),
-      concreteMaterial
+      concreteMaterial,
     );
     wall4.position.set(-50, -10, 0);
     wall4.castShadow = true;
     wall4.receiveShadow = true;
 
-    const meshes = [plane, box, wall1, wall3, wall2, wall4];
+    const meshes = [plane, box, wall1, wall2, wall3, wall4];
 
-    const objects_ = [];
+    const objects = [];
 
-    for (let i = 0; i < meshes.length; i++) {
+    for (let i = 0; i < meshes.length; ++i) {
       const b = new THREE.Box3();
       b.setFromObject(meshes[i]);
-      objects_.push(b);
+      objects.push(b);
+    }
+
+    if (test.fpsCamera) {
+      test.fpsCamera.objects = objects;
     }
 
     if (test.scene) {
@@ -107,7 +111,7 @@ function App() {
      * @param tiling how many tiles are each mapping
      * @returns a mesh standard material to be used in a THREE.Mesh
      */
-    function loadMaterial_(name, tiling) {
+    function loadMaterial_(name: string, tiling: number) {
       const mapLoader = new THREE.TextureLoader();
       const maxAnisotropy = test.renderer.capabilities.getMaxAnisotropy();
 
