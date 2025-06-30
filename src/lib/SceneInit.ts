@@ -123,25 +123,32 @@ class PlayerInput {
 }
 
 class FirstPersonCamera {
-  camera: THREE.PerspectiveCamera;
-  rotation: THREE.Quaternion;
   translation: THREE.Vector3 | undefined;
   input: PlayerInput | undefined;
+  objects: THREE.Box3[] | undefined;
+  camera: THREE.PerspectiveCamera;
+  rotation: THREE.Quaternion;
   phi: number;
   theta: number;
-  // headBobActive: boolean;
+  phiSpeed: number;
+  thetaSpeed: number;
+  headBobActive: boolean;
+  headBobTimer: number;
 
   constructor(camera: THREE.PerspectiveCamera) {
     this.camera = camera;
-    this.input = undefined;
     this.rotation = new THREE.Quaternion();
-    // this.translation = undefined;
     this.translation = new THREE.Vector3();
+    this.objects = undefined;
+    this.input = undefined;
 
     // NOTE: extra things for translation
-    // this.headBobActive = false;
+    this.headBobActive = false;
+    this.headBobTimer = 0;
     this.phi = 0;
     this.theta = 0;
+    this.phiSpeed = 8;
+    this.thetaSpeed = 5;
   }
 
   initialize() {
@@ -153,14 +160,58 @@ class FirstPersonCamera {
     this.updateRotation(timeElapsed);
     this.updateCamera(timeElapsed);
     this.updateTranslation(timeElapsed);
+    this.updateHeadBob(timeElapsed);
     if (this.input) {
       this.input.update(timeElapsed);
+    }
+  }
+
+  updateHeadBob(timeElapsed) {
+    if (this.headBobActive) {
+      const waveLength = Math.PI;
+      const nextStep =
+        1 + Math.floor(((this.headBobTimer + 0.000001) * 10) / waveLength);
+      const nextStepTime = (nextStep * waveLength) / 10;
+      this.headBobTimer = Math.min(
+        this.headBobTimer + timeElapsed,
+        nextStepTime
+      );
+
+      if (this.headBobTimer == nextStepTime) {
+        this.headBobActive = false;
+      }
     }
   }
 
   updateCamera(_) {
     this.camera.quaternion.copy(this.rotation);
     this.camera.position.copy(this.translation);
+    this.camera.position.y = Math.sin(this.headBobTimer * 10) * 0.5;
+
+    const forward = new THREE.Vector3(0, 0, -1);
+    forward.applyQuaternion(this.rotation);
+
+    const dir = forward.clone();
+
+    forward.multiplyScalar(100);
+    if (this.translation) {
+      forward.add(this.translation);
+    }
+
+    let closest = forward;
+    const result = new THREE.Vector3();
+    const ray = new THREE.Ray(this.translation, dir);
+    if (this.objects) {
+      for (let i = 0; i < this.objects.length; ++i) {
+        if (ray.intersectBox(this.objects[i], result)) {
+          if (result.distanceTo(ray.origin) < closest.distanceTo(ray.origin)) {
+            closest = result.clone();
+          }
+        }
+      }
+    }
+
+    this.camera.lookAt(closest);
   }
 
   updateTranslation(timeElapsed) {
@@ -174,28 +225,30 @@ class FirstPersonCamera {
 
     const forward = new THREE.Vector3(0, 0, -1);
     forward.applyQuaternion(qx);
-    // forward.multiplyScalar(forwardVelocity * timeElapsed * 10);
-    forward.multiplyScalar(forwardVelocity * 10);
+    forward.multiplyScalar(forwardVelocity * timeElapsed * 10);
 
     const left = new THREE.Vector3(-1, 0, 0);
     left.applyQuaternion(qx);
-    // left.multiplyScalar(strafeVelocity * timeElapsed * 10);
-    left.multiplyScalar(strafeVelocity * 10);
+    left.multiplyScalar(strafeVelocity * timeElapsed * 10);
 
     this.translation?.add(forward);
     this.translation?.add(left);
 
-    // if (forwardVelocity != 0 || strafeVelocity != 0) {
-    //   this.headBobActive = true;
-    // }
+    if (forwardVelocity != 0 || strafeVelocity != 0) {
+      this.headBobActive = true;
+    }
   }
 
   updateRotation(timeElapsed) {
     const xh = this.input.current.mouseXDelta / window.innerWidth;
     const yh = this.input.current.mouseYDelta / window.innerHeight;
 
-    this.phi += -xh * 5;
-    this.theta = clamp(this.theta + -yh * 5, -Math.PI / 3, Math.PI / 3);
+    this.phi += -xh * this.phiSpeed;
+    this.theta = clamp(
+      this.theta + -yh * this.thetaSpeed,
+      -Math.PI / 3,
+      Math.PI / 3
+    );
 
     const qx = new THREE.Quaternion();
     qx.setFromAxisAngle(new THREE.Vector3(0, 1, 0), this.phi);
@@ -312,7 +365,7 @@ export default class SceneInit {
     this.render();
     if (this.stats && this.clock && this.fpsCamera) {
       this.stats.update();
-      this.fpsCamera.update(this.clock.getElapsedTime());
+      this.fpsCamera.update(this.clock.getDelta());
     }
   }
 
