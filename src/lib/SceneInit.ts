@@ -41,12 +41,11 @@ export default class SceneInit {
 
   initialize() {
     this.scene = new THREE.Scene();
-    this.scene.fog = new THREE.FogExp2(0xefd1b5, 0.0025);
     this.camera = new THREE.PerspectiveCamera(
       this.fov,
       window.innerWidth / window.innerHeight,
       1,
-      1000
+      1000,
     );
     this.camera.position.set(0, 2, 0);
     this.fpsCamera = new FirstPersonCamera(this.camera);
