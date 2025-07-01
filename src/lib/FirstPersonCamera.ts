@@ -136,8 +136,6 @@ export default class FirstPersonCamera {
   theta: number;
   phiSpeed: number;
   thetaSpeed: number;
-  headBobActive: boolean;
-  headBobTimer: number;
 
   constructor(camera: THREE.PerspectiveCamera) {
     this.camera = camera;
@@ -147,8 +145,6 @@ export default class FirstPersonCamera {
     this.input = undefined;
 
     // NOTE: extra things for translation
-    this.headBobActive = false;
-    this.headBobTimer = 0;
     this.phi = 0;
     this.theta = 0;
     this.phiSpeed = 8;
@@ -164,33 +160,14 @@ export default class FirstPersonCamera {
     this.updateRotation();
     this.updateCamera(timeElapsed);
     this.updateTranslation(timeElapsed);
-    this.updateHeadBob(timeElapsed);
     if (this.input) {
       this.input.update(timeElapsed);
-    }
-  }
-
-  updateHeadBob(timeElapsed: number) {
-    if (this.headBobActive) {
-      const waveLength = Math.PI;
-      const nextStep = 1 +
-        Math.floor(((this.headBobTimer + 0.000001) * 10) / waveLength);
-      const nextStepTime = (nextStep * waveLength) / 10;
-      this.headBobTimer = Math.min(
-        this.headBobTimer + timeElapsed,
-        nextStepTime,
-      );
-
-      if (this.headBobTimer == nextStepTime) {
-        this.headBobActive = false;
-      }
     }
   }
 
   updateCamera(_: number) {
     this.camera.quaternion.copy(this.rotation);
     if (this.translation) this.camera.position.copy(this.translation);
-    this.camera.position.y = Math.sin(this.headBobTimer * 10) * 0.15;
 
     const forward = new THREE.Vector3(0, 0, -1);
     forward.applyQuaternion(this.rotation);
@@ -242,10 +219,6 @@ export default class FirstPersonCamera {
 
     this.translation?.add(forward);
     this.translation?.add(left);
-
-    if (forwardVelocity != 0 || strafeVelocity != 0) {
-      this.headBobActive = true;
-    }
   }
 
   updateRotation() {

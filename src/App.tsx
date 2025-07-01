@@ -10,18 +10,11 @@ function App() {
     test.initialize();
     test.animate();
 
-    const mapLoader = new THREE.TextureLoader();
-    const maxAnisotropy = test.renderer.capabilities.getMaxAnisotropy();
-    const checkerboard = mapLoader.load("/checkerboard.png");
-    checkerboard.anisotropy = maxAnisotropy;
-    checkerboard.wrapS = THREE.RepeatWrapping;
-    checkerboard.wrapT = THREE.RepeatWrapping;
-    checkerboard.repeat.set(32, 32);
-    checkerboard.colorSpace = THREE.SRGBColorSpace;
+    const gravelMaterial = loadMaterial_("rocky-dunes1_", 1000);
 
     const plane = new THREE.Mesh(
-      new THREE.PlaneGeometry(100, 100, 10, 10),
-      new THREE.MeshStandardMaterial({ map: checkerboard }),
+      new THREE.PlaneGeometry(1000, 1000, 10, 10),
+      gravelMaterial,
     );
     plane.castShadow = false;
     plane.receiveShadow = true;
@@ -98,10 +91,10 @@ function App() {
         ]);
       test.scene.add(box);
       test.scene.add(plane);
-      test.scene.add(wall1);
-      test.scene.add(wall2);
-      test.scene.add(wall3);
-      test.scene.add(wall4);
+      // test.scene.add(wall1);
+      // test.scene.add(wall2);
+      // test.scene.add(wall3);
+      // test.scene.add(wall4);
     }
 
     /**
