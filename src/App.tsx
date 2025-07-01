@@ -14,7 +14,7 @@ function App() {
 
     const plane = new THREE.Mesh(
       new THREE.PlaneGeometry(1000, 1000, 10, 10),
-      gravelMaterial,
+      gravelMaterial
     );
     plane.castShadow = false;
     plane.receiveShadow = true;
@@ -24,7 +24,7 @@ function App() {
     const boxGeometry = new THREE.BoxGeometry(4, 4, 4);
     const box = new THREE.Mesh(
       boxGeometry,
-      loadMaterial_("vintage-tile1_", 0.2),
+      loadMaterial_("vintage-tile1_", 0.2)
     );
     box.position.set(10, 0, 0);
     box.castShadow = true;
@@ -33,34 +33,34 @@ function App() {
     const concreteMaterial = loadMaterial_("concrete3-", 4);
 
     const wall1 = new THREE.Mesh(
-      new THREE.BoxGeometry(100, 50, 4),
-      concreteMaterial,
+      new THREE.BoxGeometry(1000, 50, 4),
+      concreteMaterial
     );
-    wall1.position.set(0, -10, -50);
+    wall1.position.set(0, -10, -500);
     wall1.castShadow = true;
     wall1.receiveShadow = true;
 
     const wall2 = new THREE.Mesh(
-      new THREE.BoxGeometry(100, 50, 4),
-      concreteMaterial,
+      new THREE.BoxGeometry(1000, 50, 4),
+      concreteMaterial
     );
-    wall2.position.set(0, -10, 50);
+    wall2.position.set(0, -10, 500);
     wall2.castShadow = true;
     wall2.receiveShadow = true;
 
     const wall3 = new THREE.Mesh(
-      new THREE.BoxGeometry(4, 50, 100),
-      concreteMaterial,
+      new THREE.BoxGeometry(4, 50, 1000),
+      concreteMaterial
     );
-    wall3.position.set(50, -10, 0);
+    wall3.position.set(500, -10, 0);
     wall3.castShadow = true;
     wall3.receiveShadow = true;
 
     const wall4 = new THREE.Mesh(
-      new THREE.BoxGeometry(4, 50, 100),
-      concreteMaterial,
+      new THREE.BoxGeometry(4, 50, 1000),
+      concreteMaterial
     );
-    wall4.position.set(-50, -10, 0);
+    wall4.position.set(-500, -10, 0);
     wall4.castShadow = true;
     wall4.receiveShadow = true;
 
@@ -91,10 +91,10 @@ function App() {
         ]);
       test.scene.add(box);
       test.scene.add(plane);
-      // test.scene.add(wall1);
-      // test.scene.add(wall2);
-      // test.scene.add(wall3);
-      // test.scene.add(wall4);
+      test.scene.add(wall1);
+      test.scene.add(wall2);
+      test.scene.add(wall3);
+      test.scene.add(wall4);
     }
 
     /**
