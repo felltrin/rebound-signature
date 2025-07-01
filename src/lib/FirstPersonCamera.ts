@@ -5,6 +5,7 @@ const KEYS = {
   s: "s",
   w: "w",
   d: "d",
+  shift: "Shift",
 };
 
 function clamp(x: number, a: number, b: number) {
@@ -105,12 +106,10 @@ class PlayerInput {
 
   onKeyDown(e: KeyboardEvent) {
     if (this.keys) this.keys[e.key] = true;
-    console.log(e.key);
   }
 
   onKeyUp(e: KeyboardEvent) {
     if (this.keys) this.keys[e.key] = false;
-    console.log(e.key);
   }
 
   key(key: string) {
@@ -220,8 +219,13 @@ export default class FirstPersonCamera {
   }
 
   updateTranslation(timeElapsed: number) {
-    const forwardVelocity = (this.input?.key(KEYS.w) ? 1 : 0) +
-      (this.input?.key(KEYS.s) ? -1 : 0);
+    let forwardVelocity = 0;
+    if (this.input?.key(KEYS.shift)) {
+      forwardVelocity = this.input?.key(KEYS.w) ? 1.5 : 0;
+    } else {
+      forwardVelocity = (this.input?.key(KEYS.w) ? 1 : 0) +
+        (this.input?.key(KEYS.s) ? -1 : 0);
+    }
     const strafeVelocity = (this.input?.key(KEYS.a) ? 1 : 0) +
       (this.input?.key(KEYS.d) ? -1 : 0);
 
