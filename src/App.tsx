@@ -3,23 +3,15 @@ import { useEffect } from "react";
 import * as THREE from "three";
 
 import SceneInit from "./lib/SceneInit";
+import { entity } from "./lib/Entity";
+import { gltf_component } from "./lib/GLTFComponent";
+import { entity_manager } from "./lib/EntityManager";
 
 function App() {
   useEffect(() => {
     const test = new SceneInit("myThreeJsCanvas");
     test.initialize();
     test.animate();
-
-    const gravelMaterial = loadMaterial_("rocky-dunes1_", 1000);
-
-    const plane = new THREE.Mesh(
-      new THREE.PlaneGeometry(1000, 1000, 10, 10),
-      gravelMaterial
-    );
-    plane.castShadow = false;
-    plane.receiveShadow = true;
-    plane.rotation.x = -Math.PI / 2;
-    plane.position.set(0, -2, 0);
 
     const boxGeometry = new THREE.BoxGeometry(4, 4, 4);
     const box = new THREE.Mesh(
@@ -30,53 +22,84 @@ function App() {
     box.castShadow = true;
     box.receiveShadow = true;
 
-    const concreteMaterial = loadMaterial_("concrete3-", 4);
-
-    const wall1 = new THREE.Mesh(
-      new THREE.BoxGeometry(1000, 50, 4),
-      concreteMaterial
-    );
-    wall1.position.set(0, -10, -500);
-    wall1.castShadow = true;
-    wall1.receiveShadow = true;
-
-    const wall2 = new THREE.Mesh(
-      new THREE.BoxGeometry(1000, 50, 4),
-      concreteMaterial
-    );
-    wall2.position.set(0, -10, 500);
-    wall2.castShadow = true;
-    wall2.receiveShadow = true;
-
-    const wall3 = new THREE.Mesh(
-      new THREE.BoxGeometry(4, 50, 1000),
-      concreteMaterial
-    );
-    wall3.position.set(500, -10, 0);
-    wall3.castShadow = true;
-    wall3.receiveShadow = true;
-
-    const wall4 = new THREE.Mesh(
-      new THREE.BoxGeometry(4, 50, 1000),
-      concreteMaterial
-    );
-    wall4.position.set(-500, -10, 0);
-    wall4.castShadow = true;
-    wall4.receiveShadow = true;
-
-    const meshes = [plane, box, wall1, wall2, wall3, wall4];
-
-    const objects = [];
-
-    for (let i = 0; i < meshes.length; ++i) {
-      const b = new THREE.Box3();
-      b.setFromObject(meshes[i]);
-      objects.push(b);
+    const entityManager = new entity_manager.EntityManager();
+    // load fences
+    for (let i = 0; i < 12; i++) {
+      const fence = new entity.Entity();
+      fence.AddComponent(
+        new gltf_component.StaticModelComponent({
+          scene: test.scene,
+          resourcePath: "/industrial/GLB/",
+          resourceName: "Fence.glb",
+          position: new THREE.Vector3(0, 0, 0),
+          scale: 1,
+        })
+      );
+      entityManager.Add(fence);
+      fence.SetActive(false);
+      fence.SetPosition(new THREE.Vector3(7.7 * i - 42.3, -2, -50 + 7.7 / 2));
     }
 
-    if (test.fpsCamera) {
-      test.fpsCamera.objects = objects;
+    for (let i = 0; i < 12; i++) {
+      const fence = new entity.Entity();
+      fence.AddComponent(
+        new gltf_component.StaticModelComponent({
+          scene: test.scene,
+          resourcePath: "/industrial/GLB/",
+          resourceName: "Fence.glb",
+          position: new THREE.Vector3(0, 0, 0),
+          scale: 1,
+        })
+      );
+      entityManager.Add(fence);
+      fence.SetActive(false);
+      fence.SetPosition(new THREE.Vector3(7.7 * i - 42.3, -2, 50 - 7.7 / 2));
     }
+
+    // TODO: Rotate!
+    const fence = new entity.Entity();
+    fence.AddComponent(
+      new gltf_component.StaticModelComponent({
+        scene: test.scene,
+        resourcePath: "/industrial/GLB/",
+        resourceName: "Fence.glb",
+        position: new THREE.Vector3(0, 0, 0),
+        scale: 1,
+      })
+    );
+    fence.SetPosition(new THREE.Vector3(0, -2, 0));
+    const q = new THREE.Quaternion().setFromAxisAngle(
+      new THREE.Vector3(0, 1, 0).normalize(),
+      Math.PI / 2
+    );
+    fence.SetQuaternion(q);
+    entityManager.Add(fence);
+    fence.SetActive(false);
+
+    const gravelMaterial = loadMaterial_("rocky-dunes1_", 100);
+
+    const plane = new THREE.Mesh(
+      new THREE.PlaneGeometry(100, 100, 10, 10),
+      gravelMaterial
+    );
+    plane.castShadow = false;
+    plane.receiveShadow = true;
+    plane.rotation.x = -Math.PI / 2;
+    plane.position.set(0, -2, 0);
+
+    // const meshes = [];
+
+    // const objects = [];
+
+    // for (let i = 0; i < meshes.length; ++i) {
+    //   const b = new THREE.Box3();
+    //   b.setFromObject(meshes[i]);
+    //   objects.push(b);
+    // }
+
+    // if (test.fpsCamera) {
+    //   test.fpsCamera.objects = objects;
+    // }
 
     if (test.scene) {
       test.scene.background = new THREE.CubeTextureLoader()
@@ -91,10 +114,6 @@ function App() {
         ]);
       test.scene.add(box);
       test.scene.add(plane);
-      test.scene.add(wall1);
-      test.scene.add(wall2);
-      test.scene.add(wall3);
-      test.scene.add(wall4);
     }
 
     /**
