@@ -45,9 +45,9 @@ export default class SceneInit {
       this.fov,
       window.innerWidth / window.innerHeight,
       1,
-      1000,
+      1000
     );
-    this.camera.position.set(0, 2, 0);
+    // this.camera.position.set(0, 0, 0);
     this.fpsCamera = new FirstPersonCamera(this.camera);
     this.fpsCamera.initialize();
 
