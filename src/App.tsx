@@ -56,14 +56,13 @@ function App() {
       fence.SetPosition(new THREE.Vector3(7.7 * i - 42.3, -2, 50 - 7.7 / 2));
     }
 
-    // TODO: Rotate!
+    // TODO: Rotate! [x]
     const fence = new entity.Entity();
     fence.AddComponent(
       new gltf_component.StaticModelComponent({
         scene: test.scene,
         resourcePath: "/industrial/GLB/",
         resourceName: "Fence.glb",
-        position: new THREE.Vector3(0, 0, 0),
         scale: 1,
       })
     );
