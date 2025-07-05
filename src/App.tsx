@@ -6,71 +6,7 @@ import SceneInit from "./lib/SceneInit";
 import { entity } from "./lib/Entity";
 import { gltf_component } from "./lib/GLTFComponent";
 import { entity_manager } from "./lib/EntityManager";
-// import { ammojs_component } from "./lib/AmmoJsComponent";
-
-class RigidBody {
-  transform: Ammo.btTransform | undefined;
-  motionState: Ammo.btDefaultMotionState | undefined;
-  shape: Ammo.btBoxShape | undefined;
-  inertia: Ammo.btVector3 | undefined;
-  info: Ammo.btRigidBodyConstructionInfo | undefined;
-  body: Ammo.btRigidBody | undefined;
-
-  constructor() {
-    this.transform = undefined;
-    this.motionState = undefined;
-    this.shape = undefined;
-    this.inertia = undefined;
-    this.info = undefined;
-    this.body = undefined;
-  }
-
-  setRestitution(val) {
-    this.body.setRestitution(val);
-  }
-
-  setFriction(val) {
-    this.body.setFriction(val);
-  }
-
-  setRollingFriction(val) {
-    this.body.setRollingFriction(val);
-  }
-
-  createBox(
-    mass: number,
-    pos: THREE.Vector3,
-    quat: THREE.Quaternion,
-    size: THREE.Vector3
-  ) {
-    this.transform = new Ammo.btTransform();
-    this.transform.setIdentity();
-    this.transform.setOrigin(new Ammo.btVector3(pos.x, pos.y, pos.z));
-    this.transform.setRotation(
-      new Ammo.btQuaternion(quat.x, quat.y, quat.z, quat.w)
-    );
-    this.motionState = new Ammo.btDefaultMotionState(this.transform);
-
-    const btSize = new Ammo.btVector3(size.x * 0.5, size.y * 0.5, size.z * 0.5);
-    this.shape = new Ammo.btBoxShape(btSize);
-    this.shape.setMargin(0.05);
-
-    this.inertia = new Ammo.btVector3(0, 0, 0);
-    if (mass > 0) {
-      this.shape.calculateLocalInertia(mass, this.inertia);
-    }
-
-    this.info = new Ammo.btRigidBodyConstructionInfo(
-      mass,
-      this.motionState,
-      this.shape,
-      this.inertia
-    );
-    this.body = new Ammo.btRigidBody(this.info);
-
-    Ammo.destroy(btSize);
-  }
-}
+import { ammojs_component } from "./lib/AmmoJSComponent";
 
 function App() {
   useEffect(() => {
@@ -84,48 +20,47 @@ function App() {
           test.animate();
 
           const entityManager = new entity_manager.EntityManager();
-          // _LoadFences();
+          _LoadFences();
 
           const tileMaterial = loadMaterial_("vintage-tile1_", 0.2);
           const gravelMaterial = loadMaterial_("rocky-dunes1_", 100);
 
           const boxGeometry = new THREE.BoxGeometry(4, 4, 4);
           const box = new THREE.Mesh(boxGeometry, tileMaterial);
-          box.position.set(10, 4, 0);
+          box.position.set(0, 4, -10);
           box.castShadow = true;
           box.receiveShadow = true;
 
-          const rbBox = new RigidBody();
-          rbBox.createBox(
-            1,
-            box.position,
-            box.quaternion,
-            new THREE.Vector3(4, 4, 4)
-          );
-          rbBox.setRestitution(0.5);
-          rbBox.setFriction(1);
-          rbBox.setRollingFriction(5);
-          test.physicsWorld.addRigidBody(rbBox.body);
-          test.rigidBodies.push({ mesh: box, rigidBody: rbBox });
-
           const plane = new THREE.Mesh(
-            // new THREE.PlaneGeometry(100, 100, 10, 10),
             new THREE.BoxGeometry(100, 1, 100),
             gravelMaterial
           );
           plane.castShadow = false;
           plane.receiveShadow = true;
-          // plane.rotation.x = -Math.PI / 2;
           plane.position.set(0, -2, 0);
 
-          const rbPlane = new RigidBody();
-          rbPlane.createBox(
+          const ammojs = new entity.Entity();
+          ammojs.AddComponent(new ammojs_component.AmmoJSController());
+          entityManager.Add(ammojs, "physics");
+
+          const ammojs_ = ammojs.GetComponent("AmmoJSController");
+          ammojs_.initialize();
+          test.ammoJsController = ammojs_;
+
+          const rbBox = ammojs_.createBox(
+            1,
+            box.position,
+            box.quaternion,
+            new THREE.Vector3(4, 4, 4)
+          );
+          ammojs_.rigidBodies.push({ mesh: box, rigidBody: rbBox });
+
+          const rbPlane = ammojs_.createBox(
             0,
             plane.position,
             plane.quaternion,
             new THREE.Vector3(100, 1, 100)
           );
-          test.physicsWorld.addRigidBody(rbPlane.body);
 
           if (test.scene) {
             test.scene.background = new THREE.CubeTextureLoader()
@@ -141,7 +76,6 @@ function App() {
             test.scene.add(box);
             test.scene.add(plane);
           }
-          console.log("world loaded");
 
           /**
            * Loads in a material based on the textures in freepbr
@@ -285,26 +219,6 @@ function App() {
       }
     };
     ammoSetup();
-
-    // const ammojs = new entity.Entity();
-    // ammojs.AddComponent(new ammojs_component.AmmoJSController());
-    // entityManager.Add(ammojs, "physics");
-
-    // const ammojs_ = ammojs.GetComponent("AmmoJSController");
-
-    // const meshes = [];
-
-    // const objects = [];
-
-    // for (let i = 0; i < meshes.length; ++i) {
-    //   const b = new THREE.Box3();
-    //   b.setFromObject(meshes[i]);
-    //   objects.push(b);
-    // }
-
-    // if (test.fpsCamera) {
-    //   test.fpsCamera.objects = objects;
-    // }
   }, []);
 
   return (

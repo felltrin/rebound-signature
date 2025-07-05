@@ -11,13 +11,8 @@ export default class SceneInit {
   directionalLight: THREE.DirectionalLight | undefined;
   stats: Stats | undefined;
   fpsCamera: FirstPersonCamera | undefined;
-  collisionConfiguration: Ammo.btDefaultCollisionConfiguration | undefined;
-  broadphase: Ammo.btDbvtBroadphase | undefined;
-  solver: Ammo.btSequentialImpulseConstraintSolver | undefined;
-  dispatcher: Ammo.btCollisionDispatcher | undefined;
-  physicsWorld: Ammo.btDiscreteDynamicsWorld | undefined;
-  tmpTransform: Ammo.btTransform | undefined;
-  rigidBodies: { mesh: THREE.Mesh; rigidBody: any }[];
+  // FIX THIS
+  ammoJsController: any;
   uniforms: any;
   fov: number;
   nearPlane: number;
@@ -46,30 +41,10 @@ export default class SceneInit {
     this.directionalLight = undefined;
 
     // NOTE: Physics components
-    this.tmpTransform = undefined;
-    this.collisionConfiguration = undefined;
-    this.broadphase = undefined;
-    this.solver = undefined;
-    this.dispatcher = undefined;
-    this.physicsWorld = undefined;
-    this.rigidBodies = [];
+    this.ammoJsController = undefined;
   }
 
   initialize() {
-    this.collisionConfiguration = new Ammo.btDefaultCollisionConfiguration();
-    this.dispatcher = new Ammo.btCollisionDispatcher(
-      this.collisionConfiguration
-    );
-    this.broadphase = new Ammo.btDbvtBroadphase();
-    this.solver = new Ammo.btSequentialImpulseConstraintSolver();
-    this.physicsWorld = new Ammo.btDiscreteDynamicsWorld(
-      this.dispatcher,
-      this.broadphase,
-      this.solver,
-      this.collisionConfiguration
-    );
-    this.physicsWorld.setGravity(new Ammo.btVector3(0, -10, 0));
-    this.tmpTransform = new Ammo.btTransform();
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(
       this.fov,
@@ -130,29 +105,12 @@ export default class SceneInit {
     // NOTE: Window is implied.
     // requestAnimationFrame(this.animate.bind(this));
     window.requestAnimationFrame(this.animate.bind(this));
-    if (this.clock)
-      this.physicsWorld.stepSimulation(this.clock.getDelta(), 100);
-    for (let i = 0; i < this.rigidBodies.length; ++i) {
-      this.rigidBodies[i].rigidBody.motionState.getWorldTransform(
-        this.tmpTransform
-      );
-      const pos = this.tmpTransform.getOrigin();
-      const quat = this.tmpTransform.getRotation();
-      const pos3 = new THREE.Vector3(pos.x(), pos.y(), pos.z());
-      const quat3 = new THREE.Quaternion(
-        quat.x(),
-        quat.y(),
-        quat.z(),
-        quat.w()
-      );
-
-      this.rigidBodies[i].mesh.position.copy(pos3);
-      this.rigidBodies[i].mesh.quaternion.copy(quat3);
-    }
+    const t = this.clock?.getDelta();
+    this.ammoJsController?.rigidBodyUpdate(t);
     this.render();
-    if (this.stats && this.clock && this.fpsCamera) {
+    if (this.stats && this.clock && this.fpsCamera && t) {
       this.stats.update();
-      this.fpsCamera.update(this.clock.getElapsedTime() * 0.01);
+      this.fpsCamera.update(t);
     }
   }
 
