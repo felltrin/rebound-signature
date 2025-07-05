@@ -29,6 +29,7 @@ export const gltf_component = (() => {
 
     _OnRotation(m) {
       if (this._target) {
+        console.log("setting rotation on fence");
         this._target.quaternion.copy(m.value);
       }
     }
