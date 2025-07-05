@@ -61,7 +61,6 @@ export const entity = (() => {
     }
 
     SetPosition(p) {
-      console.log("setting fence position");
       this._position.copy(p);
       this.Broadcast({
         topic: "update.position",
