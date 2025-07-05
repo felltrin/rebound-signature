@@ -56,24 +56,45 @@ function App() {
       fence.SetPosition(new THREE.Vector3(7.7 * i - 42.3, -2, 50 - 7.7 / 2));
     }
 
-    // TODO: Rotate! [x]
-    const fence = new entity.Entity();
-    fence.AddComponent(
-      new gltf_component.StaticModelComponent({
-        scene: test.scene,
-        resourcePath: "/industrial/GLB/",
-        resourceName: "Fence.glb",
-        scale: 1,
-      })
-    );
-    fence.SetPosition(new THREE.Vector3(0, -2, 0));
-    const q = new THREE.Quaternion().setFromAxisAngle(
-      new THREE.Vector3(0, 1, 0).normalize(),
-      Math.PI / 2
-    );
-    fence.SetQuaternion(q);
-    entityManager.Add(fence);
-    fence.SetActive(false);
+    for (let i = 0; i < 12; i++) {
+      const fence = new entity.Entity();
+      const q = new THREE.Quaternion().setFromAxisAngle(
+        new THREE.Vector3(0, 1, 0).normalize(),
+        Math.PI / 2
+      );
+      fence.AddComponent(
+        new gltf_component.StaticModelComponent({
+          scene: test.scene,
+          resourcePath: "/industrial/GLB/",
+          resourceName: "Fence.glb",
+          scale: 1,
+        })
+      );
+      fence.SetPosition(new THREE.Vector3(50 - 7.7 / 2, -2, 7.7 * i - 42.3));
+      fence.SetQuaternion(q);
+      entityManager.Add(fence);
+      fence.SetActive(false);
+    }
+
+    for (let i = 0; i < 12; i++) {
+      const fence = new entity.Entity();
+      const q = new THREE.Quaternion().setFromAxisAngle(
+        new THREE.Vector3(0, 1, 0).normalize(),
+        Math.PI / 2
+      );
+      fence.AddComponent(
+        new gltf_component.StaticModelComponent({
+          scene: test.scene,
+          resourcePath: "/industrial/GLB/",
+          resourceName: "Fence.glb",
+          scale: 1,
+        })
+      );
+      fence.SetPosition(new THREE.Vector3(-50 + 7.7 / 2, -2, 7.7 * i - 42.3));
+      fence.SetQuaternion(q);
+      entityManager.Add(fence);
+      fence.SetActive(false);
+    }
 
     const gravelMaterial = loadMaterial_("rocky-dunes1_", 100);
 
