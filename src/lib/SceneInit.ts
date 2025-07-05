@@ -130,29 +130,12 @@ export default class SceneInit {
     // NOTE: Window is implied.
     // requestAnimationFrame(this.animate.bind(this));
     window.requestAnimationFrame(this.animate.bind(this));
-    if (this.clock)
-      this.physicsWorld.stepSimulation(this.clock.getDelta(), 100);
-    for (let i = 0; i < this.rigidBodies.length; ++i) {
-      this.rigidBodies[i].rigidBody.motionState.getWorldTransform(
-        this.tmpTransform
-      );
-      const pos = this.tmpTransform.getOrigin();
-      const quat = this.tmpTransform.getRotation();
-      const pos3 = new THREE.Vector3(pos.x(), pos.y(), pos.z());
-      const quat3 = new THREE.Quaternion(
-        quat.x(),
-        quat.y(),
-        quat.z(),
-        quat.w()
-      );
-
-      this.rigidBodies[i].mesh.position.copy(pos3);
-      this.rigidBodies[i].mesh.quaternion.copy(quat3);
-    }
+    const t = this.clock?.getDelta();
+    this.rigidBodyUpdate(t);
     this.render();
-    if (this.stats && this.clock && this.fpsCamera) {
+    if (this.stats && this.clock && this.fpsCamera && t) {
       this.stats.update();
-      this.fpsCamera.update(this.clock.getElapsedTime() * 0.01);
+      this.fpsCamera.update(t);
     }
   }
 
@@ -169,6 +152,27 @@ export default class SceneInit {
       this.camera.aspect = window.innerWidth / window.innerHeight;
       this.camera.updateProjectionMatrix();
       this.renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+  }
+
+  rigidBodyUpdate(timeElapsedS) {
+    this.physicsWorld.stepSimulation(timeElapsedS, 10);
+    for (let i = 0; i < this.rigidBodies.length; ++i) {
+      this.rigidBodies[i].rigidBody.motionState.getWorldTransform(
+        this.tmpTransform
+      );
+      const pos = this.tmpTransform.getOrigin();
+      const quat = this.tmpTransform.getRotation();
+      const pos3 = new THREE.Vector3(pos.x(), pos.y(), pos.z());
+      const quat3 = new THREE.Quaternion(
+        quat.x(),
+        quat.y(),
+        quat.z(),
+        quat.w()
+      );
+
+      this.rigidBodies[i].mesh.position.copy(pos3);
+      this.rigidBodies[i].mesh.quaternion.copy(quat3);
     }
   }
 }

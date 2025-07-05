@@ -6,7 +6,6 @@ import SceneInit from "./lib/SceneInit";
 import { entity } from "./lib/Entity";
 import { gltf_component } from "./lib/GLTFComponent";
 import { entity_manager } from "./lib/EntityManager";
-// import { ammojs_component } from "./lib/AmmoJsComponent";
 
 class RigidBody {
   transform: Ammo.btTransform | undefined;
@@ -84,14 +83,14 @@ function App() {
           test.animate();
 
           const entityManager = new entity_manager.EntityManager();
-          // _LoadFences();
+          _LoadFences();
 
           const tileMaterial = loadMaterial_("vintage-tile1_", 0.2);
           const gravelMaterial = loadMaterial_("rocky-dunes1_", 100);
 
           const boxGeometry = new THREE.BoxGeometry(4, 4, 4);
           const box = new THREE.Mesh(boxGeometry, tileMaterial);
-          box.position.set(10, 4, 0);
+          box.position.set(0, 4, -10);
           box.castShadow = true;
           box.receiveShadow = true;
 
@@ -109,13 +108,11 @@ function App() {
           test.rigidBodies.push({ mesh: box, rigidBody: rbBox });
 
           const plane = new THREE.Mesh(
-            // new THREE.PlaneGeometry(100, 100, 10, 10),
             new THREE.BoxGeometry(100, 1, 100),
             gravelMaterial
           );
           plane.castShadow = false;
           plane.receiveShadow = true;
-          // plane.rotation.x = -Math.PI / 2;
           plane.position.set(0, -2, 0);
 
           const rbPlane = new RigidBody();
@@ -141,7 +138,6 @@ function App() {
             test.scene.add(box);
             test.scene.add(plane);
           }
-          console.log("world loaded");
 
           /**
            * Loads in a material based on the textures in freepbr
