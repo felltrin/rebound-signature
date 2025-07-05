@@ -11,6 +11,11 @@ export default class SceneInit {
   directionalLight: THREE.DirectionalLight | undefined;
   stats: Stats | undefined;
   fpsCamera: FirstPersonCamera | undefined;
+  collisionConfiguration: Ammo.btDefaultCollisionConfiguration | undefined;
+  broadphase: Ammo.btDbvtBroadphase | undefined;
+  solver: Ammo.btSequentialImpulseConstraintSolver | undefined;
+  dispatcher: Ammo.btCollisionDispatcher | undefined;
+  physicsWorld: Ammo.btDiscreteDynamicsWorld | undefined;
   uniforms: any;
   fov: number;
   nearPlane: number;
@@ -37,9 +42,29 @@ export default class SceneInit {
     // NOTE: Lighting is basically required.
     this.ambientLight = undefined;
     this.directionalLight = undefined;
+
+    // NOTE: Physics components
+    this.collisionConfiguration = undefined;
+    this.broadphase = undefined;
+    this.solver = undefined;
+    this.dispatcher = undefined;
+    this.physicsWorld = undefined;
   }
 
   initialize() {
+    this.collisionConfiguration = new Ammo.btDefaultCollisionConfiguration();
+    this.dispatcher = new Ammo.btCollisionDispatcher(
+      this.collisionConfiguration
+    );
+    this.broadphase = new Ammo.btDbvtBroadphase();
+    this.solver = new Ammo.btSequentialImpulseConstraintSolver();
+    this.physicsWorld = new Ammo.btDiscreteDynamicsWorld(
+      this.dispatcher,
+      this.broadphase,
+      this.solver,
+      this.collisionConfiguration
+    );
+    this.physicsWorld.setGravity(new Ammo.btVector3(0, -10, 0));
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(
       this.fov,
@@ -70,10 +95,10 @@ export default class SceneInit {
     document.body.appendChild(this.stats.dom);
 
     // ambient light which is for the whole scene
-    this.ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-    this.ambientLight.castShadow = true;
-    this.ambientLight.receiveShadow = true;
-    this.scene.add(this.ambientLight);
+    // this.ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    // this.ambientLight.castShadow = true;
+    // this.ambientLight.receiveShadow = true;
+    // this.scene.add(this.ambientLight);
 
     // directional light - parallel sun rays
     this.directionalLight = new THREE.DirectionalLight(0xffffff, 1);
@@ -104,6 +129,7 @@ export default class SceneInit {
     if (this.stats && this.clock && this.fpsCamera) {
       this.stats.update();
       this.fpsCamera.update(this.clock.getDelta());
+      this.physicsWorld.stepSimulation(this.clock.getDelta(), 10);
     }
   }
 
