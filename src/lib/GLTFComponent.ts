@@ -22,6 +22,15 @@ export const gltf_component = (() => {
       this._RegisterHandler("update.position", (m) => {
         this._OnPosition(m);
       });
+      this._RegisterHandler("update.rotation", (m) => {
+        this._OnRotation(m);
+      });
+    }
+
+    _OnRotation(m) {
+      if (this._target) {
+        this._target.quaternion.copy(m.value);
+      }
     }
 
     _OnPosition(m) {
@@ -47,6 +56,7 @@ export const gltf_component = (() => {
 
       this._target.scale.setScalar(this._params.scale);
       this._target.position.copy(this._parent._position);
+      this._target.quaternion.copy(this._parent._rotation);
 
       let texture = null;
       if (this._params.resourceTexture) {
