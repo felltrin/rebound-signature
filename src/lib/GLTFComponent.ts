@@ -7,22 +7,26 @@ import { entity } from "./Entity";
 
 export const gltf_component = (() => {
   class StaticModelComponent extends entity.Component {
-    constructor(params) {
-      super();
-      this._Init(params);
+    static CLASS_NAME = "StaticModelComponent";
+
+    get NAME() {
+      return StaticModelComponent.CLASS_NAME;
     }
 
-    _Init(params) {
+    constructor(params) {
+      super();
       this._params = params;
+    }
 
+    InitEntity() {
       this._LoadModels();
     }
 
     InitComponent() {
-      this._RegisterHandler("update.position", (m) => {
+      this.RegisterHandler_("update.position", (m) => {
         this._OnPosition(m);
       });
-      this._RegisterHandler("update.rotation", (m) => {
+      this.RegisterHandler_("update.rotation", (m) => {
         this._OnRotation(m);
       });
     }
@@ -55,8 +59,8 @@ export const gltf_component = (() => {
       this._params.scene.add(this._target);
 
       this._target.scale.setScalar(this._params.scale);
-      this._target.position.copy(this._parent._position);
-      this._target.quaternion.copy(this._parent._rotation);
+      this._target.position.copy(this.parent_._position);
+      this._target.quaternion.copy(this.parent_._rotation);
 
       let texture = null;
       if (this._params.resourceTexture) {
@@ -122,7 +126,7 @@ export const gltf_component = (() => {
     }
 
     InitComponent() {
-      this._RegisterHandler("update.position", (m) => {
+      this.RegisterHandler_("update.position", (m) => {
         this._OnPosition(m);
       });
     }
@@ -156,11 +160,11 @@ export const gltf_component = (() => {
       this._params.scene.add(this._target);
 
       this._target.scale.setScalar(this._params.scale);
-      this._target.position.copy(this._parent._position);
+      this._target.position.copy(this.parent_._position);
 
       this.Broadcast({
         topic: "update.position",
-        value: this._parent._position,
+        value: this.parent_._position,
       });
 
       let texture = null;
@@ -215,7 +219,7 @@ export const gltf_component = (() => {
 
       this._mixer = new THREE.AnimationMixer(this._target);
 
-      this._parent._mesh = this._target;
+      this.parent_._mesh = this._target;
       this.Broadcast({
         topic: "load.character",
         model: this._target,
