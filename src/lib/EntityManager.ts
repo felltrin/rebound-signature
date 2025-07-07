@@ -1,50 +1,92 @@
 export const entity_manager = (() => {
   class EntityManager {
     constructor() {
-      this._ids = 0;
-      this._entitiesMap = {};
-      this._entities = [];
+      this.ids_ = 0;
+      this.entitiesMap_ = {};
+      this.entities_ = [];
+      this.passes_ = [0, 1, 2, 3];
     }
 
     _GenerateName() {
-      this._ids += 1;
-
-      return "__name__" + this._ids;
+      return "__name__" + this.ids_;
     }
 
     Get(n) {
-      return this._entitiesMap[n];
+      return this.entitiesMap_[n];
     }
 
     Filter(cb) {
-      return this._entities.filter(cb);
+      return this.entities_.filter(cb);
     }
 
     Add(e, n?: string) {
+      this.ids_ += 1;
+
       if (!n) {
         n = this._GenerateName();
       }
 
-      this._entitiesMap[n] = e;
-      this._entities.push(e);
+      this.entitiesMap_[n] = e;
+      this.entities_.push(e);
 
       e.SetParent(this);
       e.SetName(n);
+      e.SetId(this.ids_);
+      e.InitEntity();
     }
 
     SetActive(e, b) {
-      const i = this._entities.indexOf(e);
-      if (i < 0) {
-        return;
-      }
+      const i = this.entities_.indexOf(e);
 
-      this._entities.splice(i, 1);
+      if (!b) {
+        if (i < 0) {
+          return;
+        }
+
+        this.entities_.splice(i, 1);
+      } else {
+        if (i >= 0) {
+          return;
+        }
+
+        this.entities_.push(e);
+      }
     }
 
     Update(timeElapsed) {
-      for (let e of this._entities) {
-        e.Update(timeElapsed);
+      // for (let e of this.entities_) {
+      //   e.Update(timeElapsed);
+      // }
+      for (let i = 0; i < this.passes_.length; ++i) {
+        this.UpdatePass_(timeElapsed, this.passes_[i]);
       }
+    }
+
+    UpdatePass_(timeElapsedS, pass) {
+      const dead = [];
+      const alive = [];
+
+      for (let i = 0; i < this.entities_.length; ++i) {
+        const e = this.entities_[i];
+
+        e.Update(timeElapsedS, pass);
+
+        if (e.dead_) {
+          dead.push(e);
+        } else {
+          alive.push(e);
+        }
+      }
+
+      for (let i = 0; i < dead.length; ++i) {
+        const e = dead[i];
+
+        delete this.entitiesMap_[e.Name];
+
+        e.Destory();
+      }
+
+      this.entities_ = alive;
     }
   }
 

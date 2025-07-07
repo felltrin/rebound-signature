@@ -2,60 +2,108 @@ import * as THREE from "three";
 
 export const entity = (() => {
   class Entity {
+    _position: THREE.Vector3;
+    _rotation: THREE.Quaternion;
+
     constructor() {
-      this._name = null;
-      this._components = {};
+      this.name_ = null;
+      this.id_ = null;
+      this.components_ = {};
 
       this._position = new THREE.Vector3();
       this._rotation = new THREE.Quaternion();
-      this._handlers = {};
-      this._parent = null;
+      this.handlers_ = {};
+      this.parent_ = null;
+      this.dead_ = false;
     }
 
-    _RegisterHandler(n, h) {
-      if (!(n in this._handlers)) {
-        this._handlers[n] = [];
+    Destroy() {
+      for (let k in this.components_) {
+        this.components_[k].Destroy();
       }
-      this._handlers[n].push(h);
+      this.components_ = null;
+      this.parent_ = null;
+      this.handlers_ = null;
+    }
+
+    RegisterHandler_(n, h) {
+      if (!(n in this.handlers_)) {
+        this.handlers_[n] = [];
+      }
+      this.handlers_[n].push(h);
     }
 
     SetParent(p) {
-      this._parent = p;
+      this.parent_ = p;
     }
 
     SetName(n) {
-      this._name = n;
+      this.name_ = n;
+    }
+
+    SetId(id) {
+      this.id_ = id;
     }
 
     get Name() {
-      return this._name;
+      return this.name_;
+    }
+
+    get ID() {
+      return this.id_;
+    }
+
+    get Manager() {
+      return this.parent_;
+    }
+
+    get Attributes() {
+      return this.attributes_;
+    }
+
+    get IsDead() {
+      return this.dead_;
     }
 
     SetActive(b) {
-      this._parent.SetActive(this, b);
+      this.parent_.SetActive(this, b);
+    }
+
+    SetDead() {
+      this.dead_ = true;
     }
 
     AddComponent(c) {
       c.SetParent(this);
-      this._components[c.constructor.name] = c;
+      this.components_[c.NAME] = c;
 
       c.InitComponent();
     }
 
+    InitEntity() {
+      for (let k in this.components_) {
+        this.components_[k].InitEntity();
+      }
+    }
+
     GetComponent(n) {
-      return this._components[n];
+      return this.components_[n];
     }
 
     FindEntity(n) {
-      return this._parent.Get(n);
+      return this.parent_.Get(n);
     }
 
     Broadcast(msg) {
-      if (!(msg.topic in this._handlers)) {
+      if (this.IsDead) {
         return;
       }
 
-      for (let curHandler of this._handlers[msg.topic]) {
+      if (!(msg.topic in this.handlers_)) {
+        return;
+      }
+
+      for (let curHandler of this.handlers_[msg.topic]) {
         curHandler(msg);
       }
     }
@@ -76,40 +124,104 @@ export const entity = (() => {
       });
     }
 
-    Update(timeElapsed) {
-      for (let k in this._components) {
-        this._components[k].Update(timeElapsed);
+    get Position() {
+      return this._position;
+    }
+
+    get Quaternion() {
+      return this._rotation;
+    }
+
+    get Forward() {
+      const forward = new THREE.Vector3(0, 0, -1);
+      forward.applyQuaternion(this._rotation);
+      return forward;
+    }
+
+    get Left() {
+      const left = new THREE.Vector3(-1, 0, 0);
+      left.applyQuaternion(this._rotation);
+      return left;
+    }
+
+    get Up() {
+      const up = new THREE.Vector3(0, 1, 0);
+      up.applyQuaternion(this._rotation);
+      return up;
+    }
+
+    // Update(timeElapsed) {
+    //   for (let k in this.components_) {
+    //     const c = this.components_[k];
+    //     if (c.Pass == pass) {
+    //       c.Update(timeElapsed);
+    //     }
+    //   }
+    // }
+
+    Update(timeElapsed, pass) {
+      for (let k in this.components_) {
+        const c = this.components_[k];
+        if (c.Pass == pass) {
+          c.Update(timeElapsed);
+        }
       }
     }
   }
 
   class Component {
-    constructor() {
-      this._parent = null;
+    get NAME() {
+      console.error("Unnamed component: ", this.constructor.name);
+      return "__UNNAMED__";
     }
 
+    constructor() {
+      this.parent_ = null;
+      this.pass_ = 0;
+    }
+
+    Destroy() {}
+
     SetParent(p) {
-      this._parent = p;
+      this.parent_ = p;
+    }
+
+    SetPass(p) {
+      this.pass_ = p;
+    }
+
+    get Pass() {
+      return this.pass_;
     }
 
     InitComponent() {}
 
+    InitEntity() {}
+
     GetComponent(n) {
-      return this._parent.GetComponent(n);
+      return this.parent_.GetComponent(n);
     }
 
     FindEntity(n) {
-      return this._parent.FindEntity(n);
+      return this.parent_.FindEntity(n);
     }
 
     Broadcast(m) {
-      this._parent.Broadcast(m);
+      this.parent_.Broadcast(m);
+    }
+
+    get Manager() {
+      return this.parent_.Manager;
+    }
+
+    get Parent() {
+      return this.parent_;
     }
 
     Update(_) {}
 
-    _RegisterHandler(n, h) {
-      this._parent._RegisterHandler(n, h);
+    RegisterHandler_(n, h) {
+      this.parent_.RegisterHandler_(n, h);
     }
   }
 
