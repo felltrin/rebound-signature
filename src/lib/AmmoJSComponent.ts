@@ -13,12 +13,12 @@ export const ammojs_component = (() => {
   const GRAVITY = 75;
 
   class AmmoJSKinematicCharacterController {
-    // transform_:
-    // shape_:
-    // body_:
-    // controller_:
-    // userData_:
-    // tmpVec3_:
+    transform_: Ammo.btTransform;
+    shape_: Ammo.btCapsuleShape;
+    body_: Ammo.btPairCachingGhostObject;
+    controller_: Ammo.btKinematicCharacterController;
+    userData_: Ammo.btVector3;
+    tmpVec3_: Ammo.btVector3;
 
     constructor() {}
 
