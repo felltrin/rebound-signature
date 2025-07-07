@@ -60,7 +60,7 @@ export const player_input = (() => {
       };
       this.keys = {};
       this.previousKeys = {};
-      this.previous_ = null;
+      // this.previous_ = null;
 
       document.addEventListener(
         "mousedown",
@@ -76,6 +76,7 @@ export const player_input = (() => {
       document.addEventListener("keydown", (e) => this.onKeyDown_(e), false);
       document.addEventListener("keyup", (e) => this.onKeyUp_(e), false);
 
+      console.log(this.Parent);
       this.Parent.Attributes.Input = {
         Keyboard: {
           Current: this.keys,

@@ -2,7 +2,7 @@ import * as THREE from "three";
 
 import { entity } from "./Entity";
 import { first_person_camera } from "./FirstPersonCamera";
-// import { player_input } from "./PlayerInput";
+import { player_input } from "./PlayerInput";
 
 export const spawners = (() => {
   class PlayerSpawner extends entity.Component {
@@ -20,7 +20,7 @@ export const spawners = (() => {
     Spawn() {
       const player = new entity.Entity();
       player.SetPosition(new THREE.Vector3(0, 2, 0));
-      // player.AddComponent(new player_input.PlayerInput(this.params_));
+      player.AddComponent(new player_input.PlayerInput(this.params_));
       player.AddComponent(
         new first_person_camera.FirstPersonCamera(this.params_)
       );

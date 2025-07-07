@@ -7,123 +7,8 @@ import { passes } from "./Passes";
 import { math } from "./Math";
 
 export const first_person_camera = (() => {
-  class PlayerInput {
-    current:
-      | {
-          leftButton: boolean;
-          rightButton: boolean;
-          mouseX: number;
-          mouseY: number;
-          mouseXDelta: number;
-          mouseYDelta: number;
-        }
-      | undefined;
-    previous:
-      | {
-          leftButton: boolean;
-          rightButton: boolean;
-          mouseX: number;
-          mouseY: number;
-          mouseXDelta: number;
-          mouseYDelta: number;
-        }
-      | undefined;
-    keys: { [key: string]: boolean } | undefined;
-    previousKeys: object | undefined;
-
-    constructor() {
-      // NOTE: general input state object
-      this.current = undefined;
-      this.previous = undefined;
-      this.previousKeys = undefined;
-    }
-
-    initialize() {
-      this.current = {
-        leftButton: false,
-        rightButton: false,
-        mouseX: 0,
-        mouseY: 0,
-        mouseXDelta: 0,
-        mouseYDelta: 0,
-      };
-      this.keys = {};
-      this.previousKeys = {};
-
-      document.addEventListener("mousedown", (e) => this.onMouseDown(e), false);
-      document.addEventListener("mouseup", (e) => this.onMouseUp(e), false);
-      document.addEventListener("mousemove", (e) => this.onMouseMove(e), false);
-      document.addEventListener("keydown", (e) => this.onKeyDown(e), false);
-      document.addEventListener("keyup", (e) => this.onKeyUp(e), false);
-    }
-
-    onMouseDown(e: MouseEvent) {
-      switch (e.button) {
-        case 0: {
-          if (this.current) this.current.leftButton = true;
-          break;
-        }
-        case 2: {
-          if (this.current) this.current.rightButton = true;
-          break;
-        }
-      }
-    }
-
-    onMouseUp(e: MouseEvent) {
-      switch (e.button) {
-        case 0: {
-          if (this.current) this.current.leftButton = false;
-          break;
-        }
-        case 2: {
-          if (this.current) this.current.rightButton = false;
-          break;
-        }
-      }
-    }
-
-    onMouseMove(e: MouseEvent) {
-      if (this.current) {
-        this.current.mouseX = e.pageX - window.innerWidth / 2;
-        this.current.mouseY = e.pageY - window.innerHeight / 2;
-      }
-
-      if (this.previous === undefined && this.current) {
-        this.previous = { ...this.current };
-      }
-
-      if (this.current && this.previous) {
-        this.current.mouseXDelta = this.current.mouseX - this.previous.mouseX;
-        this.current.mouseYDelta = this.current.mouseY - this.previous.mouseY;
-      }
-    }
-
-    onKeyDown(e: KeyboardEvent) {
-      if (this.keys) this.keys[e.key] = true;
-    }
-
-    onKeyUp(e: KeyboardEvent) {
-      if (this.keys) this.keys[e.key] = false;
-    }
-
-    key(key: string) {
-      if (this.keys) return !!this.keys[key];
-    }
-
-    update(_: number) {
-      if (this.previous && this.current) {
-        this.current.mouseXDelta = this.current.mouseX - this.previous.mouseX;
-        this.current.mouseYDelta = this.current.mouseY - this.previous.mouseY;
-
-        this.previous = { ...this.current };
-      }
-    }
-  }
-
   class FirstPersonCamera extends entity.Component {
     static CLASS_NAME = "FirstPersonCamera";
-    input: PlayerInput | undefined;
     objects: THREE.Box3[] | undefined;
     translation: THREE.Vector3;
     camera: THREE.PerspectiveCamera;
@@ -148,9 +33,8 @@ export const first_person_camera = (() => {
       this.params_.scene.add(this.group_);
 
       this.rotation = new THREE.Quaternion();
-      this.translation = new THREE.Vector3();
+      this.translation = new THREE.Vector3(0, 2, 0);
       this.objects = undefined;
-      this.input = undefined;
 
       // NOTE: extra things for translation
       this.phi = 0;
@@ -166,9 +50,6 @@ export const first_person_camera = (() => {
     }
 
     InitEntity() {
-      this.input = new PlayerInput();
-      this.input.initialize();
-
       this.phi = 0;
       this.theta = 0;
       this.phiSpeed = 8;
@@ -177,25 +58,21 @@ export const first_person_camera = (() => {
       this.strafeSpeed_ = 10;
 
       // Uncomment this when spawner is implemented
-      // this.Parent.Attributes.FPSCamera = {
-      //   group: this.group_,
-      // };
+      this.Parent.Attributes.FPSCamera = {
+        group: this.group_,
+      };
 
       this.SetPass(passes.CAMERA);
     }
 
     Update(timeElapsed: number) {
-      console.log("begin updating now");
       this.updateRotation(timeElapsed);
       this.updateCamera(timeElapsed);
       this.updateTranslation(timeElapsed);
-      if (this.input) {
-        this.input.update(timeElapsed);
-      }
 
       // Uncomment this when spawner is implemented
-      // this.Parent.SetPosition(this.translation);
-      // this.Parent.SetQuaternion(this.rotation);
+      this.Parent.SetPosition(this.translation);
+      this.Parent.SetQuaternion(this.rotation);
     }
 
     updateCamera(_: number) {
@@ -233,17 +110,19 @@ export const first_person_camera = (() => {
     }
 
     updateTranslation(timeElapsed: number) {
+      const input = this.GetComponent("PlayerInput");
+
       let forwardVelocity = 0;
-      if (this.input?.key(player_input.KEYS.shift)) {
-        forwardVelocity = this.input?.key(player_input.KEYS.w) ? 1.5 : 0;
+      if (input.key(player_input.KEYS.shift)) {
+        forwardVelocity = input.key(player_input.KEYS.w) ? 1.5 : 0;
       } else {
         forwardVelocity =
-          (this.input?.key(player_input.KEYS.w) ? 1 : 0) +
-          (this.input?.key(player_input.KEYS.s) ? -1 : 0);
+          (input.key(player_input.KEYS.w) ? 1 : 0) +
+          (input.key(player_input.KEYS.s) ? -1 : 0);
       }
       const strafeVelocity =
-        (this.input?.key(player_input.KEYS.a) ? 1 : 0) +
-        (this.input?.key(player_input.KEYS.d) ? -1 : 0);
+        (input.key(player_input.KEYS.a) ? 1 : 0) +
+        (input.key(player_input.KEYS.d) ? -1 : 0);
 
       const qx = new THREE.Quaternion();
       qx.setFromAxisAngle(new THREE.Vector3(0, 1, 0), this.phi);
@@ -271,14 +150,10 @@ export const first_person_camera = (() => {
     }
 
     updateRotation(timeElapsedS) {
-      // Uncomment when spawner is implemented
-      // const input = this.GetComponent("PlayerInput");
+      const input = this.GetComponent("PlayerInput");
 
-      let xh, yh;
-      if (this.input && this.input.current) {
-        xh = this.input.current.mouseXDelta / window.innerWidth;
-        yh = this.input.current.mouseYDelta / window.innerHeight;
-      }
+      const xh = input.current.mouseXDelta / window.innerWidth;
+      const yh = input.current.mouseYDelta / window.innerHeight;
 
       if (xh && yh) {
         this.phi += -xh * this.phiSpeed;
