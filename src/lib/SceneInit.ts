@@ -1,14 +1,13 @@
 import * as THREE from "three";
 import Stats from "three/examples/jsm/libs/stats.module.js";
 
-import { first_person_camera } from "./FirstPersonCamera";
 import { entity_manager } from "./EntityManager";
 import { gltf_component } from "./GLTFComponent";
 import { entity } from "./Entity";
 import { ammojs_component } from "./AmmoJSComponent";
+import { spawners } from "./Spawners";
 
 type EntityManager = InstanceType<typeof entity_manager>;
-type FirstPersonCamera = InstanceType<typeof first_person_camera>;
 type AmmoJSController = InstanceType<typeof ammojs_component>;
 
 export default class SceneInit {
@@ -19,7 +18,6 @@ export default class SceneInit {
   ambientLight: THREE.AmbientLight | undefined;
   directionalLight: THREE.DirectionalLight | undefined;
   stats: Stats | undefined;
-  fpsCamera: FirstPersonCamera | undefined;
   entityManager: EntityManager | undefined;
   ammoJsController: AmmoJSController | undefined;
   uniforms: any;
@@ -41,7 +39,6 @@ export default class SceneInit {
     this.canvasId = canvasId;
 
     // NOTE: Additional components.
-    this.fpsCamera = undefined;
     this.clock = undefined;
     this.stats = undefined;
 
@@ -56,6 +53,7 @@ export default class SceneInit {
 
   initialize() {
     this.entityManager = new entity_manager.EntityManager();
+
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(
       this.fov,
@@ -63,12 +61,6 @@ export default class SceneInit {
       1,
       1000
     );
-    const params = {
-      camera: this.camera,
-      scene: this.scene,
-    };
-    this.fpsCamera = new first_person_camera.FirstPersonCamera(params);
-    this.fpsCamera.InitEntity();
 
     // NOTE: Specify a canvas which is already created in the HTML.
     // const canvas = document.getElementById(this.canvasId);
@@ -168,6 +160,17 @@ export default class SceneInit {
       this.scene.add(box);
       this.scene.add(plane);
     }
+
+    const params = {
+      camera: this.camera,
+      scene: this.scene,
+    };
+
+    const spawner = new entity.Entity();
+    spawner.AddComponent(new spawners.PlayerSpawner(params));
+    this.entityManager.Add(spawner, "spawners");
+
+    spawner.GetComponent("PlayerSpawner").Spawn();
   }
 
   animate() {
@@ -175,11 +178,11 @@ export default class SceneInit {
     // requestAnimationFrame(this.animate.bind(this));
     window.requestAnimationFrame(this.animate.bind(this));
     const t = this.clock?.getDelta();
+    this.entityManager.Update(t);
     this.ammoJsController?.RigidBodyUpdate(t);
     this.render();
-    if (this.stats && this.clock && this.fpsCamera && t) {
+    if (this.stats && this.clock && t) {
       this.stats.update();
-      this.fpsCamera.update(t);
     }
   }
 

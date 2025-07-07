@@ -9,6 +9,7 @@ export const entity = (() => {
       this.name_ = null;
       this.id_ = null;
       this.components_ = {};
+      this.attributes_ = {};
 
       this._position = new THREE.Vector3();
       this._rotation = new THREE.Quaternion();
