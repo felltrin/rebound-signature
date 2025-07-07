@@ -33,7 +33,7 @@ export const first_person_camera = (() => {
       this.params_.scene.add(this.group_);
 
       this.rotation = new THREE.Quaternion();
-      this.translation = new THREE.Vector3(0, 2, 0);
+      this.translation = new THREE.Vector3(0, 1, 0);
       this.objects = undefined;
 
       // NOTE: extra things for translation
