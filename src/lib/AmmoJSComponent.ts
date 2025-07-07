@@ -2,6 +2,75 @@ import * as THREE from "three";
 import { entity } from "./Entity";
 
 export const ammojs_component = (() => {
+  const flags = {
+    CF_STATIC_OBJECT: 1,
+    CF_KINEMATIC_OBJECT: 2,
+    CF_NO_CONTACT_RESPONSE: 4,
+    CF_CUSTOM_MATERIAL_CALLBACK: 8,
+    CF_CHARACTER_OBJECT: 16,
+  };
+
+  const GRAVITY = 75;
+
+  class AmmoJSKinematicCharacterController {
+    // transform_:
+    // shape_:
+    // body_:
+    // controller_:
+    // userData_:
+    // tmpVec3_:
+
+    constructor() {}
+
+    Destroy() {}
+
+    Init(pos, quat, userData) {
+      const radius = 1;
+      const height = 3;
+
+      this.transform_ = new Ammo.btTransform();
+      this.transform_.setIdentity();
+      this.transform_.setOrigin(new Ammo.btVector3(pos.x, pos.y, pos.z));
+      this.transform_.setRotation(
+        new Ammo.btQuaternion(quat.x, quat.y, quat.z, quat.w)
+      );
+
+      this.shape_ = new Ammo.btCapsuleShape(radius, height);
+      this.shape_.setMargin(0.05);
+
+      this.body_ = new Ammo.btPairCachingGhostObject();
+      this.body_.setWorldTransform(this.transform_);
+      this.body_.setCollisionShape(this.shape_);
+      this.body_.setCollisionFlags(flags.CF_CHARACTER_OBJECT);
+      // this.body_.setActive(true);
+
+      this.controller_ = new Ammo.btKinematicCharacterController(
+        this.body_,
+        this.shape_,
+        0.35,
+        1
+      );
+      this.controller_.setUseGhostSweepTest(true);
+      this.controller_.setUpInterpolate();
+      this.controller_.setGravity(GRAVITY);
+      this.controller_.setMaxSlope(Math.PI / 3);
+      this.controller_.canJump(true);
+      this.controller_.setJumpSpeed(GRAVITY / 3);
+      this.controller_.setMaxJumpHeight(100);
+
+      this.userData_ = new Ammo.btVector3(0, 0, 0);
+      this.userData_.userData = userData;
+      this.body_.setUserPointer(this.userData_);
+
+      this.tmpVec3_ = new Ammo.btVector3(0, 0, 0);
+    }
+
+    setWalkDirection(walk) {
+      this.tmpVec3_.setValue(walk.x, walk.y, walk.z);
+      this.controller_.setWalkDirection(this.tmpVec3_);
+    }
+  }
+
   class RigidBody {
     transform_: Ammo.btTransform | undefined;
     motionState_: Ammo.btDefaultMotionState | undefined;
@@ -172,6 +241,20 @@ export const ammojs_component = (() => {
       box.setRollingFriction(5);
 
       return box;
+    }
+
+    CreateKinematicCharacterController(pos, quat, userData) {
+      const controller = new AmmoJSKinematicCharacterController();
+      controller.Init(pos, quat, userData);
+
+      this.physicsWorld_.addCollisionObject(controller.body_);
+      this.physicsWorld_.addAction(controller.controller_);
+
+      const broadphase = this.physicsWorld_.getBroadphase();
+      const paircache = broadphase.getOverlappingPairCache();
+      paircache.setInternalGhostPairCallback(new Ammo.btGhostPairCallback());
+
+      return controller;
     }
   }
 

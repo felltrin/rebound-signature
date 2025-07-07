@@ -3,6 +3,7 @@ import * as THREE from "three";
 import { entity } from "./Entity";
 import { first_person_camera } from "./FirstPersonCamera";
 import { player_input } from "./PlayerInput";
+import { kinematic_character_controller } from "./KinematicCharacterController";
 
 export const spawners = (() => {
   class PlayerSpawner extends entity.Component {
@@ -24,7 +25,11 @@ export const spawners = (() => {
       player.AddComponent(
         new first_person_camera.FirstPersonCamera(this.params_)
       );
-      // player.AddComponent(new kinematic_character_controller.KinematicCharacterController(this.params_));
+      player.AddComponent(
+        new kinematic_character_controller.KinematicCharacterController(
+          this.params_
+        )
+      );
       // player.AddComponent(new gun_controller.GunController(this.params_));
       // player.AddComponent(new health_component.HealthComponent({health: 100, maxHealth: 100, updateUI: true}));
 
