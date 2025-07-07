@@ -184,7 +184,8 @@ export const first_person_camera = (() => {
       this.SetPass(passes.CAMERA);
     }
 
-    update(timeElapsed: number) {
+    Update(timeElapsed: number) {
+      console.log("begin updating now");
       this.updateRotation(timeElapsed);
       this.updateCamera(timeElapsed);
       this.updateTranslation(timeElapsed);
